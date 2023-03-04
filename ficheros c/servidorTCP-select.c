@@ -9,6 +9,17 @@
 
 #define MAXCLIENTES 5 //Máximo de clientes permitidos
 
+
+
+/*
+
+    Cliente[MAXCLIENTES] -> [0 0 0 0 0]
+    Conjunto
+
+
+*/
+
+
 int CrearSocketTCP(int puerto)
 {
     int s;
@@ -33,29 +44,6 @@ int CrearSocketTCP(int puerto)
         perror("En listen");
         exit(1);
     }
-    return s;
-}
-
-int CrearSocketUDP(int puerto)
-{
-    int s;
-    struct sockaddr_in dir;
-    int r;
-
-    s = socket(PF_INET, SOCK_DGRAM, 0);
-    if (s==-1) {
-        perror("En socket UDP");
-        exit(1);
-    }
-    dir.sin_family = AF_INET;
-    dir.sin_port   = htons(puerto);
-    dir.sin_addr.s_addr = htonl(INADDR_ANY);
-    r = bind(s, (struct sockaddr *) &dir, sizeof(dir));
-    if (r==-1) {
-        perror("En bind UDP");
-        exit(1);
-    }
-
     return s;
 }
 
