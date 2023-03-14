@@ -1,1 +1,1 @@
-aux=getchar();
+    if (tipo_socket != 't' && tipo_socket != 'u') {

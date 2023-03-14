@@ -1,6 +1,8 @@
 {
     "files.associations": {
         "stdio.h": "c",
-        "tipos.h": "c"
+        "tipos.h": "c",
+        "calculadora.h": "c",
+        "ioctl.h": "c"
     }
 }

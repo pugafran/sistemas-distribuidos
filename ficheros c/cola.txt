@@ -1,0 +1,118 @@
+struct Cola{
+	int tamaño;
+	int *q;
+	int head;  // posición de inserción siguiente elemento
+	int tail;  // posición de extracción siguiente elemento
+	sem_t hay_espacio, hay_algo;
+	pthread_mutex_t m;
+}typedef struct Cola ColaTrabajos;
+
+void inicializar_cola(ColaTrabajos *micola; int tam){
+	if(tam <=0){
+		perror("El tamaño de la cola debe de ser positivo");
+		exit(1);
+	}
+	micola->q = (int*)malloc(sizeof(int)*tam);
+	if(micola->q == NULL){
+		perror("Puntero a la cola nulo");
+		exit(1);
+	}
+	micola->tamaño = tam;
+	if(sem_init(&micola->hay_espacio,0,tam)== -1){
+		perror("Error al inicializar el semaforo hay_espacio.");
+		exit(1);
+	}
+	if(sem_init(&micola->hay_algo,0,0) == -1){
+		perror("Error al inicializar el semaforo hay_algo.");
+		exit(1);
+	}
+	if( pthread_mutex_init(&micola->m,NULL) == -1){
+		                perror("Error al inicializar el mutex.");
+		    exit(1);
+	}
+}
+
+void destruir_cola(ColaTrabajos *micola){
+	if(micola == NULL){
+		perror("Puntero a la cola es nulo");
+		exit(1);
+	}
+	
+	if(micola -> q != NULL) free(micola -> q);
+	if(sem_destroy(&micola -> hay_espacio) == -1){
+		perror("Error al destruir el semaforo hay_espacio.");
+		exit(1);
+	}
+
+	if(sem_destroy(&micola -> hay_algo) == -1){
+		perror("Error al destruir el semaforo hay_algo.");
+		exit(1);
+	}
+	if(pthread_mutex_destroy(&micola -> m) == -1){
+		perror("Error al destruir el mutex.");
+		exit(1);
+	}	
+}
+
+
+int obtener_dato_cola(ColaTrabajos *micola){
+	int dato;
+	if(micola == NULL){
+		perror("Puntero a la cola es nulo.");
+		exit(1);
+	}
+	
+	if(sem_wait(&micola -> hay_algo) == -1){  // Nunca toma valores negativos el semaforo
+		perror("Error al decrementar el semaforo hay_algo.");
+		exit(1);
+	}
+	if(pthread_mutex_lock(&micola -> m) == -1){
+		perror("Error al obtener el mutex.");
+		exit(1);
+	}
+	dato = micola -> q[micola -> tail];
+	micola -> tail = (micola -> tail+1) % micola -> tamaño;
+	if(pthread_mutex_unlock(&micola -> m) == -1){
+		perror("Error al liberar el mutex.");
+		exit(1);
+	}
+	
+	if(sem_post(&micola -> hay_espacio) == -1){
+		perror("Error al incrementar el semaforo hay_espacio.");
+		exit(1);
+	}
+	return dato;
+}
+
+
+int insertar_dato_cola(ColaTrabajos *micola, int dato){
+	if(micola == NULL){
+		perror("Puntero a la cola es nulo);
+		exit(1);
+	}
+	if(sem_wait(&micola -> hay_espacio) == -1){
+		perror("Error al decrementar el semaforo hay_espacio.");
+		exit(1);
+	}
+
+	if(pthread_mutex_lock(&micola -> m) == -1){
+		perror("Error al obtener el mutex.");
+		exit(1);
+	}
+	
+	micola -> q[micola -> head] = dato;
+	micola -> head = (micola -> head+1) % micola -> tam;
+	
+	
+	if(pthread_mutex_unlock(&micola -> m) == -1){
+		perror("Error al liberar el mutex.");
+		exit(1);
+	}
+	if(sem_post(&micola -> hay_algo) == -1){
+		perror("Error al incrementar el semaforo hay_algo.");
+		exit(1);
+	}
+}
+
+
+

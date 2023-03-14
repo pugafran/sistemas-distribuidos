@@ -1,0 +1,2 @@
+getchar(); //consumir el retorno de carro del buffer de teclado
+fgets()
