@@ -1,4 +1,7 @@
 #include "calculadora.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 // Faltarian mas includes...
 
 int main(int argc, char *argv[]) {
@@ -36,7 +39,56 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
     // ... A completar, imprime el valor recibido
-    printf("El resultado es %d", res1);
+    printf("El resultado de sumar es %d\n", *res1);
+
+        // Realizar invocacion remota
+    res1 = restar_1(&op, clnt);
+    // Mostrar resultado, recordar que devuelve un puntero
+    if (res1 == NULL) {
+        clnt_perror(clnt, "Fallo en la invocacion remota");
+        exit(1);
+    }
+    // ... A completar, imprime el valor recibido
+    printf("El resultado de restar es %d\n", *res1);
+
+        // Realizar invocacion remota
+    res1 = multiplicar_1(&op, clnt);
+    // Mostrar resultado, recordar que devuelve un puntero
+    if (res1 == NULL) {
+        clnt_perror(clnt, "Fallo en la invocacion remota");
+        exit(1);
+    }
+    // ... A completar, imprime el valor recibido
+    printf("El resultado de multiplicar es %d\n", *res1);
+
+        // Realizar invocacion remota
+    
+    res2 = dividir_1(&op, clnt);
+    // Mostrar resultado, recordar que devuelve un puntero
+    if (res2 == NULL) {
+        clnt_perror(clnt, "Fallo en la invocacion remota");
+        exit(1);
+    }
+    // ... A completar, imprime el valor recibido
+    switch(res2->caso){
+        case 1:
+                printf("El resultado de la división es: %d\n",res2->Resultado_u.n);
+                break;
+        case 2:
+                printf("El resultado de la división es: %f\n",res2->Resultado_u.x);
+                break;
+        case 3: 
+                printf("Error: %s\n", res2->Resultado_u.error);
+                break;
+        default:
+                printf("Error: Valor de selector inválido");
+
+
+
+
+    }
+
+
 
     clnt_destroy(clnt);
     return 0;

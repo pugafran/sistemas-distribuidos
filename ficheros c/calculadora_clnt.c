@@ -4,6 +4,7 @@
  */
 
 #include "calculadora.h"
+#include <string.h>
 
 /* Default timeout can be changed using clnt_control() */
 static struct timeval TIMEOUT = { 25, 0 };
