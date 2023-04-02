@@ -1,0 +1,4 @@
+hola: hola.c
+	gcc -o hola hola.c
+limpia:
+	rm *.o *.out hola 2> /dev/null 
