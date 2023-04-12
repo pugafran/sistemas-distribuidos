@@ -11,6 +11,7 @@
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include "protocolo.h"
 
 #define MAX_TAM_LINEA   500
 #define MAX_TAM_MENSAJE 500
@@ -24,8 +25,12 @@ void recibir_y_mostrar_mensaje(int socketUDP);
 
 int main(int argc, char *argv[])
 {
-    int socketUDP; int puerto;  // Para el socket entre peers
+    int socketUDP, puerto;  // Para el socket entre peers
     struct sockaddr_in dirUDP;
+
+    int socketTCP, puertoServidor;
+    struct sockaddr_in dirTCP;
+
     int teclado = 0;        // Descriptor de la entrada estandar
 
     // Para el select
@@ -39,9 +44,9 @@ int main(int argc, char *argv[])
     int  puerto_peer = 0;
 
     /***** Comprobación de argumentos *****/
-    if (argc != 3)
+    if (argc != 5)
     {
-        printf("Uso: %s puerto nick\n", argv[0]);
+        printf("Uso: %s <puerto> <nick> <ip servidor> <puerto servidor>\n", argv[0]);
         exit(2);
     }
     nick = argv[2];
@@ -51,6 +56,39 @@ int main(int argc, char *argv[])
     
     //TODO: Comprobar puerto
     puerto = atoi(argv[1]);
+    puertoServidor = atoi(argv[4]);
+
+    //const char *ip_str = argv[3];
+    //struct in_addr ip_str_addr;
+
+    if ((socketTCP = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        perror("Al crear el socket");
+        exit(EXIT_FAILURE);
+    }
+
+    dirTCP.sin_family = AF_INET;
+    dirTCP.sin_addr.s_addr = htonl(argv[3]);
+    dirTCP.sin_port = htons(puertoServidor);
+    
+    //complete TCP conection
+    if (connect(socketTCP, (struct sockaddr *) &dirTCP, sizeof(struct sockaddr_in)) < 0) {
+        perror("Al conectar con el servidor");
+        exit(EXIT_FAILURE);
+    }
+
+    sendByte(socketTCP, JOIN_CMD);
+
+    //receive the message of server
+    if (readByte(socketTCP) != CMD_OK)
+    {
+        perror("El nick ya estaba registrado, u otros problemas");
+        exit(EXIT_FAILURE);
+    }
+
+    close(socketTCP);
+
+
+    
 
     /***** Inicialización del socket ****/
     // Creamos el socket UDP en el puerto que se le pasa por linea de comandos
@@ -114,7 +152,7 @@ int main(int argc, char *argv[])
     }
 }
 
-void recibir_y_mostrar_mensaje(int socketUDP)
+void recibir_y_mostrar_mensaje(int socketUDP, int socketTCP)
 {
     char buff[MAX_TAM_MENSAJE];
     int recibidos;
@@ -126,7 +164,7 @@ void recibir_y_mostrar_mensaje(int socketUDP)
     printf("\n**|%s|\n", buff);
 }
 
-void leer_y_procesar_teclado(int socketUDP)
+void leer_y_procesar_teclado(int socketUDP, int socketTCP)
 {
     char linea[MAX_TAM_LINEA];
     char cmd[MAX_TAM_LINEA];
@@ -165,6 +203,10 @@ void leer_y_procesar_teclado(int socketUDP)
         /*******************************************************/
 
         if (strcmp(cmd,"/CHAT") == 0){
+
+            socketTCP = CrearSocketDatosTCP();
+            CrearSocketServidorTCP(socketTCP);
+            Conectar(socketTCP, );
 
             //Cambiamos al destinatario de nuestros mensajes
             sscanf(linea, "%s %s %d", cmd, &ip_destino, &puerto_destino);

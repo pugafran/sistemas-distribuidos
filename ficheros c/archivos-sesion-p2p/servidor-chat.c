@@ -24,8 +24,9 @@ typedef struct Cliente Cliente;
 Cliente *clientes[MAX_CLIENTS];
 
 
+
 void init_clientes()
-// Inicializa con NULL el array de clientes
+// Inicializa con NULL el array de clientes ¿Calloc?
 {
     int i;
     for (i = 0; i < MAX_CLIENTS; i++) clientes[i] = NULL;
@@ -97,7 +98,8 @@ int registra(char *nick, struct sockaddr_in *endpoint)
     // retornando error si hay algún problema.
     c = malloc(sizeof(Cliente));
     if (c == NULL) return -1;
-    c->nick = malloc(strlen(nick));
+    // Esto se supone que estaba mal puse + 1
+    c->nick = malloc(strlen(nick)+1);
     if (c->nick == NULL)
     {
         free(c);
@@ -287,3 +289,9 @@ int main(int argc, char *argv[])
         close(sockDatos);
     }
 }
+
+
+//join(cmd);
+//le envio dos bytes con el tamaño de mi nick
+//direcion ip y puerto correspondiente
+//capturar sigint 
