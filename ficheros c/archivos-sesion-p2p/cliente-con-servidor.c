@@ -12,6 +12,8 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include "protocolo.h"
+#include <sys/select.h>
+
 
 #define MAX_TAM_LINEA   500
 #define MAX_TAM_MENSAJE 500
@@ -20,8 +22,8 @@
 char *nick;                 // Para enviarlo en cada mensaje
 
 // Estas funciones están implementadas después de main()
-void leer_y_procesar_teclado(int socketUDP);
-void recibir_y_mostrar_mensaje(int socketUDP);
+void leer_y_procesar_teclado(int socketUDP, int socketTCP);
+void recibir_y_mostrar_mensaje(int socketUDP, int socketTCP);
 
 int main(int argc, char *argv[])
 {
@@ -41,6 +43,7 @@ int main(int argc, char *argv[])
     // Las siguientes variables contendrán la IP y puerto del peer
     // al que enviar los mensajes
     char *ip_peer = NULL;
+    char *ipServidor = NULL;
     int  puerto_peer = 0;
 
     /***** Comprobación de argumentos *****/
@@ -58,7 +61,7 @@ int main(int argc, char *argv[])
     puerto = atoi(argv[1]);
     puertoServidor = atoi(argv[4]);
 
-    //const char *ip_str = argv[3];
+    const char *ipServidor = argv[3];
     //struct in_addr ip_str_addr;
 
     if ((socketTCP = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -142,12 +145,12 @@ int main(int argc, char *argv[])
         // Al salir es que algo ha ocurrido
         if (FD_ISSET(socketUDP, &escucha))
         {
-            recibir_y_mostrar_mensaje(socketUDP);
+            recibir_y_mostrar_mensaje(socketUDP, socketTCP);
         }
 
         if (FD_ISSET(teclado, &escucha))
         {
-            leer_y_procesar_teclado(socketUDP);
+            leer_y_procesar_teclado(socketUDP, socketTCP);
         }
     }
 }
@@ -164,7 +167,7 @@ void recibir_y_mostrar_mensaje(int socketUDP, int socketTCP)
     printf("\n**|%s|\n", buff);
 }
 
-void leer_y_procesar_teclado(int socketUDP, int socketTCP)
+void leer_y_procesar_teclado(int socketUDP, int socketTCP, int puertoServidor, char *ipServidor)
 {
     char linea[MAX_TAM_LINEA];
     char cmd[MAX_TAM_LINEA];
@@ -206,7 +209,8 @@ void leer_y_procesar_teclado(int socketUDP, int socketTCP)
 
             socketTCP = CrearSocketDatosTCP();
             CrearSocketServidorTCP(socketTCP);
-            Conectar(socketTCP, );
+            Conectar(socketTCP, ipServidor, puertoServidor);
+            sendShort(socketTCP, QUERY_CMD);
 
             //Cambiamos al destinatario de nuestros mensajes
             sscanf(linea, "%s %s %d", cmd, &ip_destino, &puerto_destino);
